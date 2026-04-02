@@ -1,9 +1,14 @@
 Why I built this ---
 
-I'm always interested in how ideas translate into code. In this experiment, I explored what it means to compress an image into pixels -
-which brought me down a rabbit hole of lossy compression that preserves perceptual identity but that's perhaps for another blog post.
+I'm always interested in how ideas translate into code. In this experiment, I explored what it means to compress an image into pixels.
+This exploration brought me down a rabbit hole of lossy compression and preserving perceptual identity - that's perhaps for another blog post.
 
-TLDR ---
+But these articles by Brandon Rohrer were great reads: 
+- [How to Convert an RGB Image to Grayscale](https://brandonrohrer.com/convert_rgb_to_grayscale.html)
+- [How to Convert a Picture to Numbers](https://brandonrohrer.com/images_to_numbers.html)
+
+
+Project TLDR ---
 
 We are essentially throwing away most of the information in the image on purpose — collapsing it down to a grid of cells. 
 Each cell discards color, texture, and detail, keeping only one number: brightness.
