@@ -51,3 +51,8 @@ Brightness — lift the overall exposure
 
 Contrast — push the darks darker and lights lighter
 
+
+
+
+Test it out [here](https://pixel-me-experiment.vercel.app/)
+
