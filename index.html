@@ -17,15 +17,96 @@
     }
     canvas { display: block; }
     video { display: none; }
+    label {
+      color: #444;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+    }
   </style>
 </head>
 <body>
 
+<div id="status">STARTING CAMERA...</div>
 <canvas id="out" width="640" height="480"></canvas>
 <video id="vid" autoplay playsinline muted></video>
 
 <script>
-
-</script>
+    const vid    = document.getElementById('vid');
+    const out    = document.getElementById('out');
+    const status = document.getElementById('status');
+    const ctx    = out.getContext('2d');
+  
+    // hidden canvas for RGB sampling
+    const tmpCamera    = document.createElement('canvas');
+    const tCtx   = tmpCamera.getContext('2d', { willReadFrequently: true });
+  
+    let pixelSize  = 10;
+    let brightness = 1;
+    let contrast   = 1;
+    let colorR = 255, colorG = 255, colorB = 255;
+    let ready = false;
+  
+    // camera
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then(stream => {
+        vid.srcObject = stream;
+        return vid.play();
+      })
+      .then(() => {
+        status.textContent = '';
+        ready = true;
+        requestAnimationFrame(draw);
+      })
+      .catch(err => {
+        status.textContent = 'ERROR: ' + err.message;
+      });
+  
+    function draw() {
+      requestAnimationFrame(draw);
+      if (!ready || vid.readyState < 2) return;
+  
+      const W = out.width;
+      const H = out.height;
+  
+      // calc how many pixels fit
+      const cols = Math.floor(W / pixelSize);
+      const rows = Math.floor(H / pixelSize);
+  
+      // Sample video into tiny canvas 
+      // also (mirrored)
+      tmpCamera.width  = cols;
+      tmpCamera.height = rows;
+      tCtx.save();
+      tCtx.scale(-1, 1);
+      tCtx.drawImage(vid, -cols, 0, cols, rows);
+      tCtx.restore();
+  
+      const { data } = tCtx.getImageData(0, 0, cols, rows);
+  
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, W, H);
+  
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const i = (row * cols + col) * 4;
+  
+          // luminance
+          let lum = (0.2126 * data[i] + 0.7152 * data[i+1] + 0.0722 * data[i+2]) / 255;
+  
+          // calc contrast + brightness
+          lum = (lum - 0.5) * contrast + 0.5;
+          lum  = Math.max(0, Math.min(1, lum * brightness));
+  
+          ctx.fillStyle = `rgb(${Math.round(colorR*lum)},${Math.round(colorG*lum)},${Math.round(colorB*lum)})`;
+          ctx.fillRect(col * pixelSize, row * pixelSize, pixelSize - 1, pixelSize - 1);
+        }
+      }
+    }
+  </script>
 </body>
 </html>
